@@ -41,9 +41,6 @@ def get_by_nick(request, nick):
 # CRUD
 @api_view(['GET','POST','PUT','DELETE'])
 def user_manager(request):
-
-# ACESSOS
-
 		if request.method == 'GET':
 				try:
 						if request.GET['user']:                         # verifica se existe um parametro chamado 'user' 
@@ -59,7 +56,6 @@ def user_manager(request):
 				except:
 						return Response(status=status.HTTP_400_BAD_REQUEST)
 
-# CRIANDO DADOS
 		if request.method == 'POST':
 				new_user = request.data
 				serializer = UserSerializer(data=new_user)
@@ -68,7 +64,6 @@ def user_manager(request):
 						return Response(serializer.data, status=status.HTTP_201_CREATED)
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-# EDITAR DADOS (PUT)
 		if request.method == 'PUT':
 				nickname = request.data['user_nickname']
 				try:
@@ -90,21 +85,6 @@ def user_manager(request):
 						return Response(status=status.HTTP_202_ACCEPTED)
 				except:
 						return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # def databaseEmDjango():
 
