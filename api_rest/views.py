@@ -55,7 +55,7 @@ def user_manager(request):
 								return Response(status=status.HTTP_400_BAD_REQUEST)
 				except:
 						return Response(status=status.HTTP_400_BAD_REQUEST)
-
+# CRIAR DADOS
 		if request.method == 'POST':
 				new_user = request.data
 				serializer = UserSerializer(data=new_user)
@@ -63,7 +63,8 @@ def user_manager(request):
 						serializer.save()
 						return Response(serializer.data, status=status.HTTP_201_CREATED)
 				return Response(status=status.HTTP_400_BAD_REQUEST)
-
+  
+# EDITAR DADOS
 		if request.method == 'PUT':
 				nickname = request.data['user_nickname']
 				try:
@@ -77,7 +78,7 @@ def user_manager(request):
 						return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
 				return Response(status=status.HTTP_400_BAD_REQUEST)
 
-# DELETAR DADOS (DELETE)
+# DELETAR DADOS 
 		if request.method == 'DELETE':
 				try:
 						user_to_delete = User.objects.get(pk=request.data['user_nickname'])
@@ -85,17 +86,5 @@ def user_manager(request):
 						return Response(status=status.HTTP_202_ACCEPTED)
 				except:
 						return Response(status=status.HTTP_400_BAD_REQUEST)
-
-# def databaseEmDjango():
-
-#     data = User.objects.get(pk='gabriel_nick')          # OBJETO
-
-#     data = User.objects.filter(user_age='25')           # QUERYSET
-
-#     data = User.objects.exclude(user_age='25')          # QUERYSET
-
-#     data.save()
-
-#     data.delete()
 
 

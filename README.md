@@ -4,7 +4,7 @@
 
 Esta API permite a criação, leitura, atualização e exclusão de usuários e postagens de blog.
 
-**Base URL**: `hhttp://127.0.0.1:8000/api/`
+**Base URL**: `127.0.0.1:8000/admin/` painel adminitrativo do django
 
 ---
 
@@ -14,7 +14,11 @@ Esta API permite a criação, leitura, atualização e exclusão de usuários e 
 
 #### 1.1 Listar Usuários
 
-- **Endpoint**: `GET /api/users/`
+- **Endpoint**: `GET 127.0.0.1:8000/api/`
+
+#### 1.2 Listar Usuário pelo nome
+
+- **Endpoint**: `GET 127.0.0.1:8000/user/<str:nick>`
 
 ---
 
