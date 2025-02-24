@@ -1,10 +1,8 @@
-from django.contrib import admin
 from django.urls import path
-
-from . import views
+from .views import register_user, login_user, get_users
 
 urlpatterns = [
-		path('', views.get_users, name='get_all_users'),
-		path('user/<str:nick>', views.get_by_nick),
-		path('data/', views.user_manager),
+    path('register/', register_user, name='register_user'),  # Cadastro
+    path('login/', login_user, name='login_user'),  # Autenticação
+    path('users/', get_users, name='get_all_users'),  # Lista de usuários (Protegido por Token)
 ]

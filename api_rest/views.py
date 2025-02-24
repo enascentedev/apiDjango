@@ -1,90 +1,55 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import check_password
 
-from .models import User
+from django.contrib.auth.models import User
+
 from .serializers import UserSerializer
 
-import json
+# 📌 Endpoint de Registro de Usuário
+@api_view(['POST'])
+def register_user(request):
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
 
-@api_view(['GET'])
-def get_users(request):
-		if request.method == 'GET':
-				users = User.objects.all()
-				serializer = UserSerializer(users, many=True)
-				return Response(serializer.data)
-		return Response(status=status.HTTP_400_BAD_REQUEST)
+        # Criar um Token para o usuário recém-criado
+        token, created = Token.objects.get_or_create(user=user)
 
-@api_view(['GET','PUT'])
-def get_by_nick(request, nick):
-		try:
-				user = User.objects.get(pk=nick)
-		except User.DoesNotExist:
-				return Response(status=status.HTTP_404_NOT_FOUND)
-		
-		if request.method =='GET':
-				serializer = UserSerializer(user)
-				return Response(serializer.data)
-  
-		if request.method =='PUT':
-				serializer = UserSerializer(user,data=request.data)
-				
-				if serializer.is_valid():
-					serializer.save()
-					return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-   
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-  
-# CRUD
-@api_view(['GET','POST','PUT','DELETE'])
-def user_manager(request):
-		if request.method == 'GET':
-				try:
-						if request.GET['user']:                         # verifica se existe um parametro chamado 'user' 
-								user_nickname = request.GET['user']         # pega parametro
-								try:
-										user = User.objects.get(pk=user_nickname)   # pega o objeto no database
-								except:
-										return Response(status=status.HTTP_404_NOT_FOUND)
-								serializer = UserSerializer(user)           # Serialize para um objeto json
-								return Response(serializer.data)            # Return os dados serializados
-						else:
-								return Response(status=status.HTTP_400_BAD_REQUEST)
-				except:
-						return Response(status=status.HTTP_400_BAD_REQUEST)
-# CRIAR DADOS
-		if request.method == 'POST':
-				new_user = request.data
-				serializer = UserSerializer(data=new_user)
-				if serializer.is_valid():
-						serializer.save()
-						return Response(serializer.data, status=status.HTTP_201_CREATED)
-				return Response(status=status.HTTP_400_BAD_REQUEST)
-  
-# EDITAR DADOS
-		if request.method == 'PUT':
-				nickname = request.data['user_nickname']
-				try:
-						updated_user = User.objects.get(pk=nickname)
-				except:
-						return Response(status=status.HTTP_404_NOT_FOUND)
-				serializer = UserSerializer(updated_user, data=request.data)
+        return Response({'username': user.username, 'token': token.key}, status=status.HTTP_201_CREATED)
     
-				if serializer.is_valid():
-						serializer.save()
-						return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-				return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# DELETAR DADOS 
-		if request.method == 'DELETE':
-				try:
-						user_to_delete = User.objects.get(pk=request.data['user_nickname'])
-						user_to_delete.delete()
-						return Response(status=status.HTTP_202_ACCEPTED)
-				except:
-						return Response(status=status.HTTP_400_BAD_REQUEST)
+# 📌 Endpoint de Login do Usuário
+@api_view(['POST'])
+def login_user(request):
+    username = request.data.get('username')  # Alterado para "username"
+    password = request.data.get('password')  # Alterado para "password"
 
+    if not username or not password:
+        return Response({'error': 'Username e senha são obrigatórios.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    try:
+        user = User.objects.get(username=username)  # Buscar pelo "username"
+    except User.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Verifica a senha corretamente
+    if not check_password(password, user.password):
+        return Response({'error': 'Credenciais inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Pega ou cria um token para o usuário
+    token, created = Token.objects.get_or_create(user=user)
+
+    return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+# 📌 Endpoint protegido que lista os usuários (somente autenticados)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_users(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data)
