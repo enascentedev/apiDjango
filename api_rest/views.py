@@ -40,17 +40,17 @@ def register_user(request):
 
 @api_view(["POST"])
 def login_user(request):
-    login = request.data.get("login")
+    email = request.data.get("email")
     password = request.data.get("password")
 
-    if not login or not password:
+    if not email or not password:
         return Response(
-            {"error": "Login e senha são obrigatórios."},
+            {"error": "email e senha são obrigatórios."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     try:
-        user = CustomUser.objects.get(login=login)
+        user = CustomUser.objects.get(email=email)
     except CustomUser.DoesNotExist:
         return Response(
             {"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND
